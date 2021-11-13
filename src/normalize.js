@@ -564,17 +564,7 @@ const buildCustomSchema = (exports.buildCustomSchema = (
             field,
           });
 
-          if (field.mandatory && !disableMandatoryFields) {
-            if (field.multiple) {
-              fields[field.uid] = `[${newparent}]!`;
-            } else {
-              fields[field.uid] = `${newparent}!`;
-            }
-          } else if (field.multiple) {
-            fields[field.uid] = `[${newparent}]`;
-          } else {
-            fields[field.uid] = `${newparent}`;
-          }
+          fields[field.uid] = buildTargetType(field, newparent)
         }
 
         break;
