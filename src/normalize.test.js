@@ -37,7 +37,7 @@ describe('buildCustomSchema', () => {
   };
   const objField = type => ({ type: type });
 
-  const simpleFieldTypes = [
+  const fieldTypesForMandatoryness = [
     ['text', 'String', 'resolves'],
     ['isodate', 'Date'],
     ['number', 'Int', 'resolves'],
@@ -63,9 +63,9 @@ describe('buildCustomSchema', () => {
     testCase(type, { mandatory: false, multiple: false }, processExpected(`${expectedType}`, returnType)),
   ]).reduce((allTests, testsToAdd) => allTests.concat(testsToAdd))
 
-  describe('simple fields', () => {
+  describe('Field Mandatoryness checks', () => {
 
-    it.each(fieldDefsToMultiples(simpleFieldTypes))
+    it.each(fieldDefsToMultiples(fieldTypesForMandatoryness))
     ( 'built $fieldOpts must be type $expectedType', ({ fieldFn, fieldOpts, expectedType }) => {
       const testField = fieldFn(fieldOpts);
       const builtFields = build([testField]);
