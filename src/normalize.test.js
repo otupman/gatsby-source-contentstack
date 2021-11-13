@@ -126,12 +126,22 @@ describe('buildCustomSchema', () => {
         })
 
         describe('type names of the sub-fields', () => {
-          // The initial list of fields that is generated should only be simple
-          // type _names_ because their full types are on the type that is
-          // also _built_ when the global/group field is built
-          it('are names only', () => {
-            expect(build([schemaLikeField]).fields[schemaLikeField.uid])
-              .toEqual(`[${parent}_${schemaLikeField.uid}]!`)
+          describe('complex types', () => {
+            // The initial list of fields that is generated should only be simple
+            // type _names_ because their full types are on the type that is
+            // also _built_ when the global/group field is built
+            it('are names only', () => {
+              expect(build([schemaLikeField]).fields[schemaLikeField.uid])
+                .toEqual(`[${parent}_${schemaLikeField.uid}]!`)
+            })
+          })
+          describe('simple types', () => {
+            it('are names only', () => {
+              const schemaWithSimpleSubField = buildSchemaLikeField('group', {schema: [isoDate()]});
+
+              expect(build([schemaWithSimpleSubField]).fields[schemaLikeField.uid])
+                .toEqual(`[${parent}_${schemaLikeField.uid}]!`)
+            })
           })
         })
 
