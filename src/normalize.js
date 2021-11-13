@@ -545,25 +545,27 @@ const buildCustomSchema = (exports.buildCustomSchema = (
           disableMandatoryFields
         );
 
+        if( Object.keys(result.fields).length === 0 ) {
+          // Early exit if the field actually has no sub fields
+          return;
+        }
+
         for (const key in result.fields) {
           if (!!result.fields[key]['type']) {
             result.fields[key] = result.fields[key].type;
           }
         }
 
-        if (Object.keys(result.fields).length > 0) {
+        let fieldType = `type ${newparent} @infer ${JSON.stringify(result.fields).replace(/"/g, '')}`;
 
-          let type = `type ${newparent} @infer ${JSON.stringify(result.fields).replace(/"/g, '')}`;
+        types.push(fieldType);
 
-          types.push(type);
+        groups.push({
+          parent,
+          field,
+        });
 
-          groups.push({
-            parent,
-            field,
-          });
-
-          fields[field.uid] = buildTargetType(field, newparent)
-        }
+        fields[field.uid] = buildTargetType(field, newparent)
 
         break;
       case 'blocks':
