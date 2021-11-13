@@ -20,6 +20,11 @@ describe('buildCustomSchema', () => {
   const isoDate = opts => fieldFn('isodate', opts);
   const stringField = opts => fieldFn('text', opts);
   const numberField = opts => fieldFn('number', opts);
+  const blockField = opts => {
+    const field = fieldFn('blocks', opts);
+    field.blocks = []
+    return field;
+  }
 
   const buildSchemaLikeField = (fieldType, opts) => {
     const field = fieldFn(fieldType, opts);
@@ -50,8 +55,7 @@ describe('buildCustomSchema', () => {
     ['file', `${prefix}_assets`], // file is special
     [opts => buildSchemaLikeField('group', opts), `${parent}_${defaultUid}`],
     [opts => buildSchemaLikeField('global_field', opts), `${parent}_${defaultUid}`],
-    // not group
-    // not global field
+    [opts => blockField(opts), `${parent}_${defaultUid}`],
     // not blocks
     // not reference
 
@@ -109,6 +113,10 @@ describe('buildCustomSchema', () => {
         expect(builtFileField.parent).toEqual(parent);
         expect(builtFileField.field).toEqual(field);
       });
+
+      describe('Block fields', () => {
+
+      })
 
       describe('Group-like fields', () => {
         const schemaLikeField = buildSchemaLikeField(
