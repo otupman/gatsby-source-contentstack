@@ -5,7 +5,8 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "babel src --out-dir .",
-    "watch": "babel -w src --out-dir ."
+    "watch": "babel -w src --out-dir .",
+    "test": "jest"
   },
   "engines": {
     "node": ">=12.13.0"
@@ -52,6 +53,7 @@
     "eslint-plugin-react": "7.18.3",
     "eslint-plugin-react-hooks": "1.7.0",
     "husky": "^4.3.8",
+    "jest": "^27.3.1",
     "prettier": "^1.5.3",
     "semantic-release": "^17.4.4"
   },
