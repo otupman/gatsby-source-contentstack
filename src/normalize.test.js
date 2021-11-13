@@ -11,24 +11,16 @@ describe('buildCustomSchema', () => {
   }
 
   describe('fields', () => {
-    const isoDate = opts => {
-      return {
-        uid: 'jestblt1010101',
-        data_type: 'isodate',
-        mandatory: true,
-        multiple: true,
-        ...opts,
-      }
-    }
-    const stringField = opts => {
-      return {
-        uid: 'jestblt1010101',
-        data_type: 'text',
-        mandatory: true,
-        multiple: true,
-        ...opts,
-      }
-    }
+    const fieldFn = (type, opts) => ({
+      uid: 'jestblt1010101',
+      data_type: type,
+      mandatory: true,
+      multiple: true,
+      ...opts,
+    })
+    const isoDate = opts => fieldFn('isodate', opts);
+    const stringField = opts => fieldFn('text', opts);
+
     const testCase = (fn, opts, expectedType) => ({fieldFn: fn, fieldOpts: opts, expectedType});
     const objField = type => ({ type: type });
 
