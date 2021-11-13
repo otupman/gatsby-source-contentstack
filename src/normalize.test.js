@@ -20,6 +20,7 @@ describe('buildCustomSchema', () => {
     })
     const isoDate = opts => fieldFn('isodate', opts);
     const stringField = opts => fieldFn('text', opts);
+    const numberField = opts => fieldFn('number', opts);
 
     const testCase = (fn, opts, expectedType) => ({fieldFn: fn, fieldOpts: opts, expectedType});
     const objField = type => ({ type: type });
@@ -33,6 +34,10 @@ describe('buildCustomSchema', () => {
       testCase(isoDate, { mandatory: true, multiple: false }, 'Date!' ),
       testCase(isoDate, { mandatory: false, multiple: true }, '[Date]'),
       testCase(isoDate, { mandatory: false, multiple: false}, 'Date'),
+      testCase(numberField, { mandatory: true, multiple: true }, objField('[Int]!') ),
+      testCase(numberField, { mandatory: true, multiple: false }, objField('Int!') ),
+      testCase(numberField, { mandatory: false, multiple: true }, objField('[Int]')),
+      testCase(numberField, { mandatory: false, multiple: false}, objField('Int')),
     ])
     ( 'built $fieldOpts must be type $expectedType', ({ fieldFn, fieldOpts, expectedType }) => {
       const testField = fieldFn(fieldOpts);
