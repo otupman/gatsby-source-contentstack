@@ -22,7 +22,13 @@ describe('buildCustomSchema', () => {
     const stringField = opts => fieldFn('text', opts);
     const numberField = opts => fieldFn('number', opts);
 
-    const testCase = (fn, opts, expectedType) => ({fieldFn: fn, fieldOpts: opts, expectedType});
+    const testCase = (fn, opts, expectedType) => {
+      return {
+        fieldFn: fn instanceof Function ? fn : opts => fieldFn(fn, opts),
+        fieldOpts: opts,
+        expectedType
+      };
+    };
     const objField = type => ({ type: type });
 
     it.each([
@@ -37,7 +43,7 @@ describe('buildCustomSchema', () => {
       testCase(numberField, { mandatory: true, multiple: true }, objField('[Int]!') ),
       testCase(numberField, { mandatory: true, multiple: false }, objField('Int!') ),
       testCase(numberField, { mandatory: false, multiple: true }, objField('[Int]')),
-      testCase(numberField, { mandatory: false, multiple: false}, objField('Int')),
+      testCase('number', { mandatory: false, multiple: false}, objField('Int')),
     ])
     ( 'built $fieldOpts must be type $expectedType', ({ fieldFn, fieldOpts, expectedType }) => {
       const testField = fieldFn(fieldOpts);
