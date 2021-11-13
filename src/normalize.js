@@ -486,107 +486,42 @@ const buildCustomSchema = (exports.buildCustomSchema = (
 
   const simpleFields = {
     'text': { type: 'String', needsResolving: true},
-    // 'isodate': { type: 'Date', needsResolving: false},
-    // 'number': { type: 'Int', needsResolving: true},
-    // 'boolean': { type: 'Boolean', needsResolving: false},
-    // 'json': { type: 'JSON', needsResolving: true},
-    // 'link': { type: 'linktype', needsResolving: false},
+    'isodate': { type: 'Date', needsResolving: false},
+    'number': { type: 'Int', needsResolving: true},
+    'boolean': { type: 'Boolean', needsResolving: false},
+    'json': { type: 'JSON', needsResolving: true},
+    'link': { type: 'linktype', needsResolving: false},
   }
 
   schema.forEach(field => {
     if(simpleFields[field.data_type]) {
       const conversionInfo = simpleFields[field.data_type];
-      if(conversionInfo.needsResolving) {
-        fields[field.uid] = {
-          resolve: source => source[field.uid] || null,
-        };
-      }
+      let targetType = '';
 
       if (field.mandatory && !disableMandatoryFields) {
         if (field.multiple) {
-          fields[field.uid].type = `[${conversionInfo.type}]!`;
+          targetType = `[${conversionInfo.type}]!`;
         } else {
-          fields[field.uid].type = `${conversionInfo.type}!`;
+          targetType = `${conversionInfo.type}!`;
         }
       } else if (field.multiple) {
-        fields[field.uid].type = `[${conversionInfo.type}]`;
+        targetType = `[${conversionInfo.type}]`;
       } else {
-        fields[field.uid].type = `${conversionInfo.type}`;
+        targetType = `${conversionInfo.type}`;
       }
-    }
-    switch (field.data_type) {
-      case 'isodate':
-        if (field.mandatory && !disableMandatoryFields) {
-          if (field.multiple) {
-            fields[field.uid] = '[Date]!';
-          } else {
-            fields[field.uid] = 'Date!';
-          }
-        } else if (field.multiple) {
-          fields[field.uid] = '[Date]';
-        } else {
-          fields[field.uid] = 'Date';
-        }
-        break;
-      case 'boolean':
-        if (field.mandatory && !disableMandatoryFields) {
-          if (field.multiple) {
-            fields[field.uid] = '[Boolean]!';
-          } else {
-            fields[field.uid] = 'Boolean!';
-          }
-        } else if (field.multiple) {
-          fields[field.uid] = '[Boolean]';
-        } else {
-          fields[field.uid] = 'Boolean';
-        }
-        break;
-      case 'number':
+
+      if(conversionInfo.needsResolving) {
         fields[field.uid] = {
           resolve: source => source[field.uid] || null,
+          type: targetType
         };
-        if (field.mandatory && !disableMandatoryFields) {
-          if (field.multiple) {
-            fields[field.uid].type = '[Int]!';
-          } else {
-            fields[field.uid].type = 'Int!';
-          }
-        } else if (field.multiple) {
-          fields[field.uid].type = '[Int]';
-        } else {
-          fields[field.uid].type = 'Int';
-        }
-        break;
-      // This is to support custom field types nested inside groups, global_fields & modular_blocks
-      case 'json':
-        fields[field.uid] = {
-          resolve: source => source[field.uid] || null
-        };
-        if (field.mandatory && !disableMandatoryFields) {
-          if (field.multiple) {
-            fields[field.uid].type = '[JSON]!';
-          } else {
-            fields[field.uid].type = 'JSON!';
-          }
-        } else if (field.multiple){
-          fields[field.uid].type = '[JSON]';
-        } else {
-          fields[field.uid].type = 'JSON';
-        }
-        break;
-      case 'link':
-        if (field.mandatory && !disableMandatoryFields) {
-          if (field.multiple) {
-            fields[field.uid] = '[linktype]!';
-          } else {
-            fields[field.uid] = 'linktype!';
-          }
-        } else if (field.multiple) {
-          fields[field.uid] = '[linktype]';
-        } else {
-          fields[field.uid] = 'linktype';
-        }
-        break;
+      }
+      else {
+        fields[field.uid] = targetType
+      }
+
+    }
+    switch (field.data_type) {
       case 'file':
         const type = `type ${prefix}_assets implements Node @infer { url: String }`;
         types.push(type);
