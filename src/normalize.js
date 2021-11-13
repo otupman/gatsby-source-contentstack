@@ -378,9 +378,10 @@ const buildBlockCustomSchema = (
   fileFields,
   parent,
   prefix,
-  disableMandatoryFields
+  opts,
 ) => {
   const blockFields = {};
+  const { disableMandatoryFields } = opts;
   let blockType = `type ${parent} @infer {`;
 
   blocks.forEach(block => {
@@ -474,9 +475,12 @@ const buildCustomSchema = (exports.buildCustomSchema = (
   fileFields,
   parent,
   prefix,
-  disableMandatoryFields
+  opts
 ) => {
   const fields = {};
+  const { disableMandatoryFields } =
+    typeof opts === 'boolean' ? { disableMandatoryFields: opts } : opts;
+
   groups = groups || [];
   references = references || [];
   fileFields = fileFields || [];
@@ -539,7 +543,7 @@ const buildCustomSchema = (exports.buildCustomSchema = (
           fileFields,
           groupParent,
           prefix,
-          disableMandatoryFields
+          opts
         );
 
         if( Object.keys(groupResult.fields).length === 0 ) {
@@ -577,7 +581,7 @@ const buildCustomSchema = (exports.buildCustomSchema = (
           fileFields,
           globalFieldParent,
           prefix,
-          disableMandatoryFields
+          opts
         );
 
         if( Object.keys(globalFieldResult.fields).length === 0 ) {
@@ -614,7 +618,7 @@ const buildCustomSchema = (exports.buildCustomSchema = (
           fileFields,
           blockparent,
           prefix,
-          disableMandatoryFields
+          opts
         );
 
         types.push(blockType);
