@@ -21,6 +21,13 @@ describe('buildCustomSchema', () => {
   const stringField = opts => fieldFn('text', opts);
   const numberField = opts => fieldFn('number', opts);
 
+  const schemaLikeField = (fieldType, opts) => {
+    const field = fieldFn(fieldType, opts);
+    // A group or global field w/out it's own field will be ignored
+    field.schema = [stringField({uid: `${fieldType}_child_schema_field`})]
+    return field;
+  }
+
   const testCase = (fn, opts, expectedType) => {
     return {
       fieldFn: fn instanceof Function ? fn : opts => fieldFn(fn, opts),
@@ -38,6 +45,8 @@ describe('buildCustomSchema', () => {
     ['json', 'JSON', 'resolves'],
     ['link', 'linktype'],
     ['file', `${prefix}_assets`], // file is special
+    [opts => schemaLikeField('group', opts), `${parent}_${defaultUid}`],
+    [opts => schemaLikeField('global_field', opts), `${parent}_${defaultUid}`],
     // not group
     // not global field
     // not blocks
