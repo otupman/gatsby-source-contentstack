@@ -597,16 +597,10 @@ const buildCustomSchema = (exports.buildCustomSchema = (
 
           fieldTypeName = `${prefix}_${field.reference_to}`;
         } else {
-          const unions = [];
-          field.reference_to.forEach(reference => {
-            const referenceType = `${prefix}_${reference}`;
-            unionType = unionType.concat(referenceType);
-            unions.push(referenceType);
-          });
+          const unions = field.reference_to.map(reference => `${prefix}_${reference}`);
 
           types.push(...unions.map(buildReferenceTypeDeclaration))
-
-          unionType = unionType.concat('_Union = ', unions.join(' | '));
+          unionType = `union ${unions.join('')}_Union = ${unions.join(' | ')}`;
 
           types.push(unionType);
 
@@ -618,11 +612,7 @@ const buildCustomSchema = (exports.buildCustomSchema = (
           uid: field.uid,
         });
 
-        if (field.mandatory && !disableMandatoryFields) {
-          fields[field.uid] = `[${fieldTypeName}]!`;
-        } else {
-          fields[field.uid] = `[${fieldTypeName}]`;
-        }
+        fields[field.uid] = buildTargetType(field, fieldTypeName)
         break;
       default:
         console.warn(`Field type ${JSON.stringify(field)} is unsupported`)
