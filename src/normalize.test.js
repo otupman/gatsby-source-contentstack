@@ -9,9 +9,9 @@ describe('buildCustomSchema', () => {
   const build = schema => {
     return buildCustomSchema(schema, null, null, null, null, parent, prefix, disableMandatoryFields);
   }
-
+  const defaultUid = 'jestblt1010101';
   const fieldFn = (type, opts = {}) => ({
-    uid: 'jestblt1010101',
+    uid: defaultUid,
     data_type: type,
     mandatory: true,
     multiple: true,
