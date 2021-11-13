@@ -31,11 +31,11 @@ describe('buildCustomSchema', () => {
   const objField = type => ({ type: type });
 
   const fieldTypes = [
-    ['text', 'String', 'obj'],
+    ['text', 'String', 'resolves'],
     ['isodate', 'Date'],
-    ['number', 'Int', 'obj'],
+    ['number', 'Int', 'resolves'],
     ['boolean', 'Boolean'],
-    ['json', 'JSON', 'obj'],
+    ['json', 'JSON', 'resolves'],
     ['link', 'linktype'],
     // not file
     // not group
@@ -45,9 +45,9 @@ describe('buildCustomSchema', () => {
 
   ]
 
-  describe('fields', () => {
+  describe('simple fields', () => {
     const processExpected = (type, returnType) => {
-      return returnType === 'obj' ? objField(type) : type;
+      return returnType === 'resolves' ? objField(type) : type;
     }
     it.each(fieldTypes.map(([type, expectedType, returnType]) => [
       testCase(type, { mandatory: true, multiple: true }, processExpected(`[${expectedType}]!`, returnType)),
