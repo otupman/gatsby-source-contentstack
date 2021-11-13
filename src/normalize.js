@@ -493,20 +493,19 @@ const buildCustomSchema = (exports.buildCustomSchema = (
     'link': { type: 'linktype', needsResolving: false},
   }
 
+  function buildTargetType(field, typeName) {
+    let targetType = field.multiple ? `[${typeName}]` : typeName;
+
+    if (field.mandatory && !disableMandatoryFields) {
+      targetType += '!';
+    }
+    return targetType;
+  }
+
   schema.forEach(field => {
     if(simpleFields[field.data_type]) {
       const conversionInfo = simpleFields[field.data_type];
-      let targetType = '';
-
-      if (field.multiple) {
-        targetType = `[${conversionInfo.type}]`;
-      } else {
-        targetType = `${conversionInfo.type}`;
-      }
-
-      if(field.mandatory && !disableMandatoryFields) {
-        targetType += '!';
-      }
+      const targetType = buildTargetType(field, conversionInfo.type);
 
       if(conversionInfo.needsResolving) {
         fields[field.uid] = {
