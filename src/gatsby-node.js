@@ -25,14 +25,20 @@ exports.createSchemaCustomization = async ({ cache, actions, schema }, configOpt
 
   const typePrefix = configOptions.type_prefix || 'Contentstack';
   const disableMandatoryFields = configOptions.disableMandatoryFields || false;
+  let fetchStage = 'contentTypeOptions'
   try {
     const contentTypeOption = getContentTypeOption(configOptions);
+    fetchStage = 'fetchContentTypes'
     contentTypes = await fetchContentTypes(configOptions, contentTypeOption);
+
+    fetchStage = 'cacheSet'
     // Caching content-types because we need to be able to support multiple stacks.
     await cache.set(typePrefix, contentTypes);
   } catch (error) {
-    console.error('Contentstack fetch content type failed!');
+    console.error('Contentstack fetch content type failed at stage', fetchStage, error);
+    return
   }
+
   if (configOptions.enableSchemaGeneration) {
     const { createTypes } = actions;
     contentTypes.forEach(contentType => {

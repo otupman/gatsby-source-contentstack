@@ -10,13 +10,45 @@ describe('createSchemaCustomization', () => {
     jest.doMock('gatsby-plugin-utils', () => ({
       isGatsbyNodeLifecycleSupported: () => false,
     }))
+    jest.mock('./fetch', () => ({
+      fetchData: () => {
+        return new Promise((resolve) => {
+          resolve({})
+        })
+      },
+      fetchContentTypes: () => new Promise((resolve) => {
+        resolve([])
+      }),
+    }))
+    jest.mock('./normalize', () => ({
+      extendSchemaWithDefaultEntryFields: () => {},
+      buildCustomSchema: () => ({
+        references: [], groups: [], fileFields: [], types: [],
+      }),
+    }))
 
-    const { createSchemaCustomizationOrig } = require('./gatsby-node')
+    const { createSchemaCustomization: createSchemaCustomizationOrig,  } = require('./gatsby-node')
 
     createSchemaCustomization = createSchemaCustomizationOrig;
   });
 
-  it('does something', () => {
+  describe.each([
+    [{ enableSchemaGeneration: true, }, 1],
+    [{ enableSchemaGeneration: false, }, 0]
+  ])(`with config %p is called %i times`, (pluginConfig, callCount) => {
+    it('calls the customisation function if needed', async () => {
+        const createTypesMock = jest.fn();
 
+        await createSchemaCustomization(
+        {
+          cache: {set: () => {}},
+          actions: { createTypes: createTypesMock, },
+          schema: { buildObjectType: jest.fn() }
+        },
+        pluginConfig
+      );
+
+      expect(createTypesMock).toHaveBeenCalledTimes(callCount);
+    })
   })
 })
