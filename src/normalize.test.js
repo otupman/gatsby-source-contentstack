@@ -20,10 +20,13 @@ describe('buildCustomSchema', () => {
         ...opts,
       }
     }
+    const testCase = (fn, opts, expectedType) => ({fieldFn: fn, fieldOpts: opts, expectedType});
 
     it.each([
       { fieldFn: stringField, fieldOpts: { mandatory: true, multiple: true }, expectedType: '[String]!' },
       { fieldFn: stringField, fieldOpts: { mandatory: true, multiple: false }, expectedType: 'String!' },
+      testCase(stringField, { mandatory: false, multiple: true }, '[String]'),
+      testCase(stringField, { mandatory: false, multiple: false}, 'String')
     ])
     ( 'built $fieldOpts must be type $expectedType', ({ fieldFn, fieldOpts, expectedType }) => {
       const testField = fieldFn(fieldOpts);
