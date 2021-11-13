@@ -21,7 +21,7 @@ describe('buildCustomSchema', () => {
   const stringField = opts => fieldFn('text', opts);
   const numberField = opts => fieldFn('number', opts);
 
-  const schemaLikeField = (fieldType, opts) => {
+  const buildSchemaLikeField = (fieldType, opts) => {
     const field = fieldFn(fieldType, opts);
     // A group or global field w/out it's own field will be ignored
     field.schema = [stringField({uid: `${fieldType}_child_schema_field`})]
@@ -48,8 +48,8 @@ describe('buildCustomSchema', () => {
     ['json', 'JSON', 'resolves'],
     ['link', 'linktype'],
     ['file', `${prefix}_assets`], // file is special
-    [opts => schemaLikeField('group', opts), `${parent}_${defaultUid}`],
-    [opts => schemaLikeField('global_field', opts), `${parent}_${defaultUid}`],
+    [opts => buildSchemaLikeField('group', opts), `${parent}_${defaultUid}`],
+    [opts => buildSchemaLikeField('global_field', opts), `${parent}_${defaultUid}`],
     // not group
     // not global field
     // not blocks
@@ -111,8 +111,23 @@ describe('buildCustomSchema', () => {
       });
 
       describe('Group-like fields', () => {
+        describe('new type', () => {
+          const schemaLikeField = buildSchemaLikeField(
+            'global_field',
+            { schema: [ stringField( {uid: 'subfield_1'} ) ] }
+          );
+
+          it('is declared', () => {
+            expect(build([schemaLikeField]).types[0]).toContain(`type ${parent}_${defaultUid}`)
+          });
+          it('infers sub-fields', () => {
+            expect(build([schemaLikeField]).types[0]).toContain('subfield_1:[String]!')
+          })
+        })
+
+
         describe('when there are no sub-schema fields', () => {
-          const emptySchemaLikeField = schemaLikeField('global_field', {schema: []})
+          const emptySchemaLikeField = buildSchemaLikeField('global_field', {schema: []})
           it('does not get added to the field list', () => {
             expect(Object.keys(build([emptySchemaLikeField]).fields)).not.toContain(emptySchemaLikeField.uid);
           })
