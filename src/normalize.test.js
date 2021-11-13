@@ -219,9 +219,58 @@ describe('buildCustomSchema', () => {
         })
       })
 
-      describe('Group-like fields', () => {
+
+      describe('Global fields', () => {
         const schemaLikeField = buildSchemaLikeField(
           'global_field',
+          { schema: [ stringField( {uid: 'subfield_1'} ) ] }
+        );
+
+        describe('the declared sub-type', () => {
+          it('is declared', () => {
+            expect(build([schemaLikeField]).types[0]).toContain(`type ${parent}_${schemaLikeField.uid}`)
+          });
+          it('infers sub-fields', () => {
+            expect(build([schemaLikeField]).types[0]).toContain('subfield_1:[String]!')
+          })
+        })
+
+        describe('type names of the sub-fields', () => {
+          describe('complex types', () => {
+            // The initial list of fields that is generated should only be simple
+            // type _names_ because their full types are on the type that is
+            // also _built_ when the global/group field is built
+            it('are names only', () => {
+              expect(build([schemaLikeField]).fields[schemaLikeField.uid])
+                .toEqual(`[${parent}_${schemaLikeField.uid}]!`)
+            })
+          })
+          describe('simple types', () => {
+            it('are names only', () => {
+              const schemaWithSimpleSubField = buildSchemaLikeField('global_field', {schema: [isoDate()]});
+
+              expect(build([schemaWithSimpleSubField]).fields[schemaLikeField.uid])
+                .toEqual(`[${parent}_${schemaLikeField.uid}]!`)
+            })
+          })
+        })
+
+
+        describe('when there are no sub-schema fields', () => {
+          const emptySchemaLikeField = buildSchemaLikeField('global_field', {schema: []})
+          it('does not get added to the field list', () => {
+            expect(Object.keys(build([emptySchemaLikeField]).fields)).not.toContain(emptySchemaLikeField.uid);
+          })
+          it('is not added to the type list', () => {
+            expect(build([emptySchemaLikeField]).types).toEqual([])
+          })
+        })
+
+      })
+
+      describe('Group fields', () => {
+        const schemaLikeField = buildSchemaLikeField(
+          'group',
           { schema: [ stringField( {uid: 'subfield_1'} ) ] }
         );
 
