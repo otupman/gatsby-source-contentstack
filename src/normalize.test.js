@@ -141,6 +141,34 @@ describe('buildCustomSchema', () => {
         })
       })
 
+      describe('Reference fields', () => {
+        describe('with 1 reference', () => {
+          describe.each([
+            ['string', 'solo_target_type', ],
+            ['array', ['solo_target_type'], ]
+          ])('and is of type %s (%p)', (_, referenceTo) => {
+            const builtSchema = build([fieldFn(
+              'reference', { reference_to: referenceTo, }
+            )]);
+
+            it('declares the type', () => {
+              expect(builtSchema.types[0])
+                .toContain(`type ${prefix}_${typeof referenceTo === 'array' ? referenceTo[0] : referenceTo}`)
+            })
+            it('adds to the list of references', () => {
+              expect(builtSchema.references[0]).toMatchObject({
+                parent,
+                uid: defaultUid,
+              })
+            })
+          })
+        })
+
+        describe('with >1 references', () => {
+
+        })
+      })
+
       describe('Group-like fields', () => {
         const schemaLikeField = buildSchemaLikeField(
           'global_field',
