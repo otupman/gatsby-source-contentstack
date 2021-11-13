@@ -517,6 +517,7 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         fields[field.uid] = targetType
       }
 
+      return; // Early exit
     }
     switch (field.data_type) {
       case 'file':
@@ -648,6 +649,8 @@ const buildCustomSchema = (exports.buildCustomSchema = (
           }
         }
         break;
+      default:
+        console.warn(`Field type ${JSON.stringify(field)} is unsupported`)
     }
   });
   return {
