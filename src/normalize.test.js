@@ -30,22 +30,31 @@ describe('buildCustomSchema', () => {
   };
   const objField = type => ({ type: type });
 
-  describe('fields', () => {
+  const fieldTypes = [
+    ['text', 'String', 'obj'],
+    ['isodate', 'Date'],
+    ['number', 'Int', 'obj'],
+    // ['boolean', 'Boolean'],
+    // ['json', 'JSON'],
+    // ['link', 'linktype'],
+    // not file
+    // not group
+    // not global field
+    // not blocks
+    // not reference
 
-    it.each([
-      testCase('text', { mandatory: true, multiple: true }, objField('[String]!') ),
-      testCase('text', { mandatory: true, multiple: false }, objField('String!') ),
-      testCase('text', { mandatory: false, multiple: true }, objField('[String]')),
-      testCase('text', { mandatory: false, multiple: false}, objField('String')),
-      testCase('isodate', { mandatory: true, multiple: true }, '[Date]!' ),
-      testCase('isodate', { mandatory: true, multiple: false }, 'Date!' ),
-      testCase('isodate', { mandatory: false, multiple: true }, '[Date]'),
-      testCase('isodate', { mandatory: false, multiple: false}, 'Date'),
-      testCase('number', { mandatory: true, multiple: true }, objField('[Int]!') ),
-      testCase('number', { mandatory: true, multiple: false }, objField('Int!') ),
-      testCase('number', { mandatory: false, multiple: true }, objField('[Int]')),
-      testCase('number', { mandatory: false, multiple: false}, objField('Int')),
-    ])
+  ]
+
+  describe('fields', () => {
+    const processExpected = (type, returnType) => {
+      return returnType === 'obj' ? objField(type) : type;
+    }
+    it.each(fieldTypes.map(([type, expectedType, returnType]) => [
+      testCase(type, { mandatory: true, multiple: true }, processExpected(`[${expectedType}]!`, returnType)),
+      testCase(type, { mandatory: true, multiple: false }, processExpected(`${expectedType}!`, returnType)),
+      testCase(type, { mandatory: false, multiple: true }, processExpected(`[${expectedType}]`, returnType)),
+      testCase(type, { mandatory: false, multiple: false }, processExpected(`${expectedType}`, returnType)),
+    ]).reduce((allTests, testsToAdd) => allTests.concat(testsToAdd)))
     ( 'built $fieldOpts must be type $expectedType', ({ fieldFn, fieldOpts, expectedType }) => {
       const testField = fieldFn(fieldOpts);
       const builtFields = build([testField]);
