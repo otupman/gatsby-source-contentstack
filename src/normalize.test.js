@@ -111,17 +111,27 @@ describe('buildCustomSchema', () => {
       });
 
       describe('Group-like fields', () => {
-        describe('new type', () => {
-          const schemaLikeField = buildSchemaLikeField(
-            'global_field',
-            { schema: [ stringField( {uid: 'subfield_1'} ) ] }
-          );
+        const schemaLikeField = buildSchemaLikeField(
+          'global_field',
+          { schema: [ stringField( {uid: 'subfield_1'} ) ] }
+        );
 
+        describe('the declared sub-type', () => {
           it('is declared', () => {
             expect(build([schemaLikeField]).types[0]).toContain(`type ${parent}_${defaultUid}`)
           });
           it('infers sub-fields', () => {
             expect(build([schemaLikeField]).types[0]).toContain('subfield_1:[String]!')
+          })
+        })
+
+        describe('type names of the sub-fields', () => {
+          // The initial list of fields that is generated should only be simple
+          // type _names_ because their full types are on the type that is
+          // also _built_ when the global/group field is built
+          it('are names only', () => {
+            expect(build([schemaLikeField]).fields[schemaLikeField.uid])
+              .toEqual(`[${parent}_${schemaLikeField.uid}]!`)
           })
         })
 
