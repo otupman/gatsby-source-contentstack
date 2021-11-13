@@ -583,17 +583,7 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         );
 
         types.push(blockType);
-        if (field.mandatory && !disableMandatoryFields) {
-          if (field.multiple) {
-            fields[field.uid] = `[${blockparent}]!`;
-          } else {
-            fields[field.uid] = `${blockparent}!`;
-          }
-        } else if (field.multiple) {
-          fields[field.uid] = `[${blockparent}]`;
-        } else {
-          fields[field.uid] = `${blockparent}`;
-        }
+        fields[field.uid] = buildTargetType(field, blockparent)
 
         break;
       case 'reference':
