@@ -10,7 +10,7 @@ describe('buildCustomSchema', () => {
     return buildCustomSchema(schema, null, null, null, null, parent, prefix, disableMandatoryFields);
   }
 
-  const fieldFn = (type, opts) => ({
+  const fieldFn = (type, opts = {}) => ({
     uid: 'jestblt1010101',
     data_type: type,
     mandatory: true,
@@ -29,7 +29,7 @@ describe('buildCustomSchema', () => {
     };
   };
   const objField = type => ({ type: type });
-  
+
   describe('fields', () => {
 
     it.each([
@@ -61,8 +61,16 @@ describe('buildCustomSchema', () => {
 
   describe('resolver field types', () => {
     const fieldTypes = ['text', 'number'];
-    it('has a resolver', () => {
+    it.each(fieldTypes)
+    ('%s has a resolver that works', fieldType => {
+      const testField = fieldFn(fieldType);
+      const builtFields = build([testField]);
+      const builtField = builtFields.fields[testField.uid]
+      const sourceWithField = {[testField.uid]: 'Found'}
 
+      expect(builtField.resolve).not.toBeNull();
+      expect(builtField.resolve(sourceWithField)).toEqual('Found');
+      expect(builtField.resolve({})).toBeNull();
     })
   })
 })
