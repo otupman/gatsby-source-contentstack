@@ -10,26 +10,27 @@ describe('buildCustomSchema', () => {
     return buildCustomSchema(schema, null, null, null, null, parent, prefix, disableMandatoryFields);
   }
 
-  describe('fields', () => {
-    const fieldFn = (type, opts) => ({
-      uid: 'jestblt1010101',
-      data_type: type,
-      mandatory: true,
-      multiple: true,
-      ...opts,
-    })
-    const isoDate = opts => fieldFn('isodate', opts);
-    const stringField = opts => fieldFn('text', opts);
-    const numberField = opts => fieldFn('number', opts);
+  const fieldFn = (type, opts) => ({
+    uid: 'jestblt1010101',
+    data_type: type,
+    mandatory: true,
+    multiple: true,
+    ...opts,
+  })
+  const isoDate = opts => fieldFn('isodate', opts);
+  const stringField = opts => fieldFn('text', opts);
+  const numberField = opts => fieldFn('number', opts);
 
-    const testCase = (fn, opts, expectedType) => {
-      return {
-        fieldFn: fn instanceof Function ? fn : opts => fieldFn(fn, opts),
-        fieldOpts: opts,
-        expectedType
-      };
+  const testCase = (fn, opts, expectedType) => {
+    return {
+      fieldFn: fn instanceof Function ? fn : opts => fieldFn(fn, opts),
+      fieldOpts: opts,
+      expectedType
     };
-    const objField = type => ({ type: type });
+  };
+  const objField = type => ({ type: type });
+  
+  describe('fields', () => {
 
     it.each([
       testCase('text', { mandatory: true, multiple: true }, objField('[String]!') ),
