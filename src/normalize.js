@@ -482,8 +482,6 @@ const buildCustomSchema = (exports.buildCustomSchema = (
   fileFields = fileFields || [];
   types = types || [];
 
-  const resolverFn = field => source => source[field.uid] || null;
-
   const simpleFields = {
     'text': { type: 'String', needsResolving: true},
     'isodate': { type: 'Date', needsResolving: false},
