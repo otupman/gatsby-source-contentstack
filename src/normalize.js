@@ -478,8 +478,10 @@ const buildCustomSchema = (exports.buildCustomSchema = (
   opts
 ) => {
   const fields = {};
-  const { disableMandatoryFields } =
-    typeof opts === 'boolean' ? { disableMandatoryFields: opts } : opts;
+  const { disableMandatoryFields, createSeparateGlobalFieldTypes } =
+    typeof opts === 'boolean'
+      ? { disableMandatoryFields: opts, createSeparateGlobalFieldTypes: false }
+      : opts;
 
   groups = groups || [];
   references = references || [];
@@ -571,7 +573,9 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         break;
 
       case 'global_field':
-        let globalFieldParent = parent.concat('_', field.uid);
+        let globalFieldParent = createSeparateGlobalFieldTypes
+          ? field.reference_to
+          : parent.concat('_', field.uid);
 
         const globalFieldResult = buildCustomSchema(
           field.schema,

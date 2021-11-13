@@ -5,11 +5,22 @@ describe('buildCustomSchema', () => {
   const parent = 'Parent_value_from_test';
   const prefix = 'prefix';
   const disableMandatoryFields = false;
+  const createSeparateGlobalFieldTypes = false;
 
-  const build = schema => {
-    return buildCustomSchema(schema, null, null, null, null, parent, prefix, disableMandatoryFields);
+  const build = (schema, opts = {customisationOptions: { disableMandatoryFields }}) => {
+    const { customisationOptions } = opts;
+    return buildCustomSchema(schema,
+      null, null, null, null,
+      parent,
+      prefix,
+      {
+        disableMandatoryFields,
+        createSeparateGlobalFieldTypes,
+        ...customisationOptions,
+      },
+    );
   }
-  const defaultUid = 'jestblt1010101';
+  const defaultUid = 'jest_root_type';
   const fieldFn = (type, opts = {}) => ({
     uid: defaultUid,
     data_type: type,
@@ -29,6 +40,11 @@ describe('buildCustomSchema', () => {
     }
   }
 
+  /**
+   * Schema-like fields come with their full schema for every content type that
+   * uses that schema-like field.  This is most relevant for global fields.
+   *
+   */
   const buildSchemaLikeField = (fieldType, opts) => {
     const field = fieldFn(fieldType, opts);
     // A group or global field w/out it's own field will be ignored
@@ -37,6 +53,12 @@ describe('buildCustomSchema', () => {
       ...field,
       ...opts,  // Override again blergh
     };
+  }
+
+  const buildGlobalField = (globalFieldName, opts) => {
+    const field = buildSchemaLikeField('global_field', opts);
+    field.reference_to = globalFieldName;
+    return field;
   }
 
   const testCase = (fn, opts, expectedType) => {
@@ -219,52 +241,76 @@ describe('buildCustomSchema', () => {
         })
       })
 
+      fdescribe('Global fields', () => {
+        describe('when a global field has already been defined', () => {
+          it('does not create a new one', () => {});
+          it('updates the groups', () => {});
 
-      describe('Global fields', () => {
-        const schemaLikeField = buildSchemaLikeField(
-          'global_field',
-          { schema: [ stringField( {uid: 'subfield_1'} ) ] }
-        );
-
-        describe('the declared sub-type', () => {
-          it('is declared', () => {
-            expect(build([schemaLikeField]).types[0]).toContain(`type ${parent}_${schemaLikeField.uid}`)
-          });
-          it('infers sub-fields', () => {
-            expect(build([schemaLikeField]).types[0]).toContain('subfield_1:[String]!')
-          })
         })
 
-        describe('type names of the sub-fields', () => {
-          describe('complex types', () => {
-            // The initial list of fields that is generated should only be simple
-            // type _names_ because their full types are on the type that is
-            // also _built_ when the global/group field is built
-            it('are names only', () => {
-              expect(build([schemaLikeField]).fields[schemaLikeField.uid])
-                .toEqual(`[${parent}_${schemaLikeField.uid}]!`)
+        describe.each([
+          [{ createSeparateGlobalFieldTypes: true}, 'my_global_field_type_name'],
+          [{ createSeparateGlobalFieldTypes: false}, 'Parent_value_from_test_jest_root_type'],
+        ])
+        (`when %p created type name is %s`, (schemaConfig, expectedTypeName) => {
+          const schemaLikeField = buildGlobalField(
+            'my_global_field_type_name',
+            { schema: [ stringField( {uid: 'subfield_1'} ) ] }
+          );
+          const builtSchema = build(
+            [schemaLikeField],
+            {customisationOptions: schemaConfig}
+          );
+
+          describe('the declared sub-type', () => {
+            it('is declared', () => {
+              expect(builtSchema.types[0])
+                .toContain(`type ${expectedTypeName}`)
+            });
+            it('infers sub-fields', () => {
+              expect(builtSchema.types[0])
+                .toContain('subfield_1:[String]!')
             })
           })
-          describe('simple types', () => {
-            it('are names only', () => {
-              const schemaWithSimpleSubField = buildSchemaLikeField('global_field', {schema: [isoDate()]});
 
-              expect(build([schemaWithSimpleSubField]).fields[schemaLikeField.uid])
-                .toEqual(`[${parent}_${schemaLikeField.uid}]!`)
+          describe('type names of the sub-fields', () => {
+            describe('complex types', () => {
+              // The initial list of fields that is generated should only be simple
+              // type _names_ because their full types are on the type that is
+              // also _built_ when the global/group field is built
+              it('are names only', () => {
+                expect(builtSchema.fields[schemaLikeField.uid])
+                  .toEqual(`[${expectedTypeName}]!`)
+              })
+            })
+            describe('simple types', () => {
+              it('are inline with names only', () => {
+                const schemaWithSimpleSubField =
+                  buildSchemaLikeField('global_field', {schema: [isoDate()]});
+
+                // Simple types are brought in, in-line, i.e. so the content
+                // type using a global field with a date field will both
+                // define the global field type with the date field, but the
+                // date field will _also_ be defined on the content type
+                // _using_ that global field.
+                expect(build([schemaWithSimpleSubField]).fields[schemaLikeField.uid])
+                  .toEqual(`[Parent_value_from_test_jest_root_type]!`)
+              })
+            })
+          })
+
+
+          describe('when there are no sub-schema fields', () => {
+            const emptySchemaLikeField = buildSchemaLikeField('global_field', {schema: []})
+            it('does not get added to the field list', () => {
+              expect(Object.keys(build([emptySchemaLikeField]).fields)).not.toContain(emptySchemaLikeField.uid);
+            })
+            it('is not added to the type list', () => {
+              expect(build([emptySchemaLikeField]).types).toEqual([])
             })
           })
         })
 
-
-        describe('when there are no sub-schema fields', () => {
-          const emptySchemaLikeField = buildSchemaLikeField('global_field', {schema: []})
-          it('does not get added to the field list', () => {
-            expect(Object.keys(build([emptySchemaLikeField]).fields)).not.toContain(emptySchemaLikeField.uid);
-          })
-          it('is not added to the type list', () => {
-            expect(build([emptySchemaLikeField]).types).toEqual([])
-          })
-        })
 
       })
 
