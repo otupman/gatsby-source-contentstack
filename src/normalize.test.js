@@ -58,7 +58,8 @@ describe('buildCustomSchema', () => {
     });
   });
 
-  describe('text fields', () => {
+  describe('resolver field types', () => {
+    const fieldTypes = ['text', 'number'];
     it('has a resolver', () => {
 
     })
