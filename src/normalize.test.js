@@ -153,7 +153,7 @@ describe('buildCustomSchema', () => {
 
             it('declares the type', () => {
               expect(builtSchema.types[0])
-                .toContain(`type ${prefix}_${typeof referenceTo === 'array' ? referenceTo[0] : referenceTo}`)
+                .toContain(`type ${prefix}_solo_target_type`)
             })
 
             it('adds to the list of references', () => {
@@ -162,7 +162,17 @@ describe('buildCustomSchema', () => {
                 uid: defaultUid,
               })
             })
+
+            describe('field type', () => {
+              // Can't use the blanket mandatoryness test as it
+              // assumes non-multiples are possible - and they're not on references
+              it('is set correctly', () => {
+                expect(builtSchema.fields[defaultUid])
+                  .toEqual(`[${prefix}_solo_target_type]!`)
+              })
+            })
           })
+
         })
 
         describe('with >1 references', () => {
@@ -194,6 +204,15 @@ describe('buildCustomSchema', () => {
             expect(builtSchema.references[0]).toMatchObject({
               parent,
               uid: defaultUid,
+            })
+          })
+
+          describe('field type', () => {
+            // Can't use the blanket mandatoryness test as it
+            // assumes non-multiples are possible - and they're not on references
+            it('is set correctly', () => {
+              expect(builtSchema.fields[defaultUid])
+                .toEqual(`[${prefix}_target_1prefix_target_2_Union]!`)
             })
           })
 
