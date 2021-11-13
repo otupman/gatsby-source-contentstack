@@ -21,11 +21,12 @@ exports.onPreBootstrap = ({ reporter }) => {
 };
 
 exports.createSchemaCustomization = async ({ cache, actions, schema }, configOptions) => {
-  let contentTypes;
-
   const typePrefix = configOptions.type_prefix || 'Contentstack';
   const disableMandatoryFields = configOptions.disableMandatoryFields || false;
   let fetchStage = 'contentTypeOptions'
+
+  let contentTypes;
+  
   try {
     const contentTypeOption = getContentTypeOption(configOptions);
     fetchStage = 'fetchContentTypes'
@@ -39,51 +40,58 @@ exports.createSchemaCustomization = async ({ cache, actions, schema }, configOpt
     return
   }
 
-  if (configOptions.enableSchemaGeneration) {
-    const { createTypes } = actions;
-    contentTypes.forEach(contentType => {
-      const contentTypeUid = contentType.uid.replace(/-/g, '_');
-      const name = `${typePrefix}_${contentTypeUid}`;
-      const extendedSchema = extendSchemaWithDefaultEntryFields(contentType.schema);
-      let result = buildCustomSchema(extendedSchema, [], [], [], [], name, typePrefix, disableMandatoryFields);
-      references = references.concat(result.references);
-      groups = groups.concat(result.groups);
-      fileFields = fileFields.concat(result.fileFields);
-      const typeDefs = [
-        `type linktype{
-              title: String
-              href: String
-            }`,
-        schema.buildObjectType({
-          name,
-          fields: result.fields,
-          interfaces: ['Node'],
-          extensions: {infer: true}
-        }),
-      ];
-      result.types = result.types.concat(typeDefs);
-      createTypes(result.types);
-    });
+  if (!configOptions.enableSchemaGeneration) {
+    // TODO: could this go higher?  The side effect of this function is that
+    //  it is setting the content type cache.  Moving this higher may break
+    //  other code that is expecting that cache to be set (it shouldn't tho)
+    return // Early exit!
+  }
 
-    /**CREATE TYPE DEFINITION FOR CONTENTTYPE OBJECT */
-    const name = `${typePrefix}ContentTypes`;
-    const fields = {
-      title: 'String!',
-      uid: 'String!',
-      created_at: 'Date',
-      updated_at: 'Date',
-      schema: 'JSON!',
-      description: 'String',
-    };
-    createTypes([
+  const { createTypes } = actions;
+  contentTypes.forEach(contentType => {
+    const contentTypeUid = contentType.uid.replace(/-/g, '_');
+    const name = `${typePrefix}_${contentTypeUid}`;
+    const extendedSchema = extendSchemaWithDefaultEntryFields(contentType.schema);
+    let result = buildCustomSchema(extendedSchema, [], [], [], [], name, typePrefix, disableMandatoryFields);
+    references = references.concat(result.references);
+    groups = groups.concat(result.groups);
+    fileFields = fileFields.concat(result.fileFields);
+    const typeDefs = [
+      `type linktype{
+            title: String
+            href: String
+          }`,
       schema.buildObjectType({
         name,
-        fields,
+        fields: result.fields,
         interfaces: ['Node'],
-        extensions: { infer: false },
+        extensions: {infer: true}
       }),
-    ]);
-  }
+    ];
+    result.types = result.types.concat(typeDefs);
+    createTypes(result.types);
+  });
+
+  /**CREATE TYPE DEFINITION FOR CONTENTTYPE OBJECT */
+  const name = `${typePrefix}ContentTypes`;
+
+  const fields = {
+    title: 'String!',
+    uid: 'String!',
+    created_at: 'Date',
+    updated_at: 'Date',
+    schema: 'JSON!',
+    description: 'String',
+  };
+
+  createTypes([
+    schema.buildObjectType({
+      name,
+      fields,
+      interfaces: ['Node'],
+      extensions: { infer: false },
+    }),
+  ]);
 };
 
 exports.sourceNodes = async ({ cache, actions, getNode, getNodes, createNodeId, reporter, createContentDigest, getNodesByType, getCache }, configOptions) => {
