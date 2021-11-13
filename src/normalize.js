@@ -529,41 +529,78 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         fields[field.uid] = buildTargetType(field, `${prefix}_assets`)
         break;
       case 'group':
-      case 'global_field':
-        let newparent = parent.concat('_', field.uid);
+        let groupParent = parent.concat('_', field.uid);
 
-        const result = buildCustomSchema(
+        const groupResult = buildCustomSchema(
           field.schema,
           types,
           references,
           groups,
           fileFields,
-          newparent,
+          groupParent,
           prefix,
           disableMandatoryFields
         );
 
-        if( Object.keys(result.fields).length === 0 ) {
+        if( Object.keys(groupResult.fields).length === 0 ) {
           // Early exit if the field actually has no sub fields
           return;
         }
 
-        for (const key in result.fields) {
-          if (!!result.fields[key]['type']) {
-            result.fields[key] = result.fields[key].type;
+        for (const key in groupResult.fields) {
+          if (!!groupResult.fields[key]['type']) {
+            groupResult.fields[key] = groupResult.fields[key].type;
           }
         }
 
-        let fieldType = `type ${newparent} @infer ${JSON.stringify(result.fields).replace(/"/g, '')}`;
+        let groupFieldType = `type ${groupParent} @infer ${JSON.stringify(groupResult.fields).replace(/"/g, '')}`;
 
-        types.push(fieldType);
+        types.push(groupFieldType);
 
         groups.push({
           parent,
           field,
         });
 
-        fields[field.uid] = buildTargetType(field, newparent)
+        fields[field.uid] = buildTargetType(field, groupParent)
+
+        break;
+
+      case 'global_field':
+        let globalFieldParent = parent.concat('_', field.uid);
+
+        const globalFieldResult = buildCustomSchema(
+          field.schema,
+          types,
+          references,
+          groups,
+          fileFields,
+          globalFieldParent,
+          prefix,
+          disableMandatoryFields
+        );
+
+        if( Object.keys(globalFieldResult.fields).length === 0 ) {
+          // Early exit if the field actually has no sub fields
+          return;
+        }
+
+        for (const key in globalFieldResult.fields) {
+          if (!!globalFieldResult.fields[key]['type']) {
+            globalFieldResult.fields[key] = globalFieldResult.fields[key].type;
+          }
+        }
+
+        let globalFieldType = `type ${globalFieldParent} @infer ${JSON.stringify(globalFieldResult.fields).replace(/"/g, '')}`;
+
+        types.push(globalFieldType);
+
+        groups.push({
+          parent,
+          field,
+        });
+
+        fields[field.uid] = buildTargetType(field, globalFieldParent)
 
         break;
       case 'blocks':
