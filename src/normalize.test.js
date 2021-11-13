@@ -22,8 +22,11 @@ describe('buildCustomSchema', () => {
   const numberField = opts => fieldFn('number', opts);
   const blockField = opts => {
     const field = fieldFn('blocks', opts);
-    field.blocks = []
-    return field;
+    field.blocks = [{schema: [isoDate({uid: `${field.uid}_isodate_field_1`})]}]
+    return {
+      ...field,
+      ...opts,
+    }
   }
 
   const buildSchemaLikeField = (fieldType, opts) => {
@@ -115,7 +118,27 @@ describe('buildCustomSchema', () => {
       });
 
       describe('Block fields', () => {
+        it('declares a type', () => {
+          expect(build([blockField()]).types[0])
+            .toContain(`type ${parent}_${defaultUid}`)
+        })
+        it('infers sub-fields', () => {
+          expect(build([blockField()]).types[0])
+            .toContain(`${defaultUid}_isodate_field_1:[Date]!`)
+        });
 
+        describe('with no sub-schema', () => {
+          it('declares the type', () => {
+            expect(build([blockField()]).types[0])
+              .toContain(`type ${parent}_${defaultUid}`)
+          })
+          it('does _not_ infer anything', () => {
+            // Note: this is different to group-like fields for not apparent
+            // reason.
+            expect(build([blockField()]).types)
+              .not.toContain('@infer')
+          })
+        })
       })
 
       describe('Group-like fields', () => {
