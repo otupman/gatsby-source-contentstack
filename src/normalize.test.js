@@ -66,10 +66,11 @@ describe('buildCustomSchema', () => {
         expect(builtField).toEqual(expectedType);
       }
     });
+
   });
 
   describe('resolver field types', () => {
-    const fieldTypes = ['text', 'number'];
+    const fieldTypes = ['text', 'number', 'json'];
     it.each(fieldTypes)
     ('%s has a resolver that works', fieldType => {
       const testField = fieldFn(fieldType);
