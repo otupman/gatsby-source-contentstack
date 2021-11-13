@@ -588,21 +588,14 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         break;
       case 'reference':
         let unionType = 'union ';
+        let fieldTypeName = null;
         if (typeof field.reference_to === 'string' || field.reference_to.length === 1) {
           field.reference_to = Array.isArray(field.reference_to) ? field.reference_to[0] : field.reference_to;
           const type = `type ${prefix}_${field.reference_to} implements Node @infer { title: String${disableMandatoryFields ? '' : '!'} }`;
+
           types.push(type);
 
-          references.push({
-            parent,
-            uid: field.uid,
-          });
-
-          if (field.mandatory && !disableMandatoryFields) {
-            fields[field.uid] = `[${prefix}_${field.reference_to}]!`;
-          } else {
-            fields[field.uid] = `[${prefix}_${field.reference_to}]`;
-          }
+          fieldTypeName = `${prefix}_${field.reference_to}`;
         } else {
           const unions = [];
           field.reference_to.forEach(reference => {
@@ -612,21 +605,23 @@ const buildCustomSchema = (exports.buildCustomSchema = (
             const type = `type ${referenceType} implements Node @infer { title: String${disableMandatoryFields ? '' : '!'} }`;
             types.push(type);
           });
-          let name = '';
-          name = name.concat(unions.join(''), '_Union');
+
           unionType = unionType.concat('_Union = ', unions.join(' | '));
+
           types.push(unionType);
 
-          references.push({
-            parent,
-            uid: field.uid,
-          });
+          fieldTypeName = unions.join('').concat('_Union');
+        }
 
-          if (field.mandatory && !disableMandatoryFields) {
-            fields[field.uid] = `[${name}]!`;
-          } else {
-            fields[field.uid] = `[${name}]`;
-          }
+        references.push({
+          parent,
+          uid: field.uid,
+        });
+
+        if (field.mandatory && !disableMandatoryFields) {
+          fields[field.uid] = `[${fieldTypeName}]!`;
+        } else {
+          fields[field.uid] = `[${fieldTypeName}]`;
         }
         break;
       default:
