@@ -37,7 +37,7 @@ describe('buildCustomSchema', () => {
     ['boolean', 'Boolean'],
     ['json', 'JSON', 'resolves'],
     ['link', 'linktype'],
-    // not file
+    ['file', `${prefix}_assets`], // file is special
     // not group
     // not global field
     // not blocks
