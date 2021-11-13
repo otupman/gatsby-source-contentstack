@@ -10,7 +10,16 @@ describe('buildCustomSchema', () => {
     return buildCustomSchema(schema, null, null, null, null, parent, prefix, disableMandatoryFields);
   }
 
-  describe('text field', () => {
+  describe('fields', () => {
+    const isoDate = opts => {
+      return {
+        uid: 'jestblt1010101',
+        data_type: 'isodate',
+        mandatory: true,
+        multiple: true,
+        ...opts,
+      }
+    }
     const stringField = opts => {
       return {
         uid: 'jestblt1010101',
@@ -21,20 +30,34 @@ describe('buildCustomSchema', () => {
       }
     }
     const testCase = (fn, opts, expectedType) => ({fieldFn: fn, fieldOpts: opts, expectedType});
+    const objField = type => ({ type: type });
 
     it.each([
-      testCase(stringField, { mandatory: true, multiple: true }, '[String]!' ),
-      testCase( stringField, { mandatory: true, multiple: false }, 'String!' ),
-      testCase(stringField, { mandatory: false, multiple: true }, '[String]'),
-      testCase(stringField, { mandatory: false, multiple: false}, 'String'),
+      testCase(stringField, { mandatory: true, multiple: true }, objField('[String]!') ),
+      testCase(stringField, { mandatory: true, multiple: false }, objField('String!') ),
+      testCase(stringField, { mandatory: false, multiple: true }, objField('[String]')),
+      testCase(stringField, { mandatory: false, multiple: false}, objField('String')),
+      testCase(isoDate, { mandatory: true, multiple: true }, '[Date]!' ),
+      testCase(isoDate, { mandatory: true, multiple: false }, 'Date!' ),
+      testCase(isoDate, { mandatory: false, multiple: true }, '[Date]'),
+      testCase(isoDate, { mandatory: false, multiple: false}, 'Date'),
     ])
     ( 'built $fieldOpts must be type $expectedType', ({ fieldFn, fieldOpts, expectedType }) => {
       const testField = fieldFn(fieldOpts);
       const builtFields = build([testField]);
       const builtField = builtFields.fields[testField.uid]
-      expect(builtField).toMatchObject({ type: expectedType });
+      if(builtField instanceof Object) {
+        expect(builtField).toMatchObject(expectedType);
+      }
+      else {
+        expect(builtField).toEqual(expectedType);
+      }
     });
+  });
 
+  describe('text fields', () => {
+    it('has a resolver', () => {
 
+    })
   })
 })
