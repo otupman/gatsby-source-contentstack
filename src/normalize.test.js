@@ -34,9 +34,9 @@ describe('buildCustomSchema', () => {
     ['text', 'String', 'obj'],
     ['isodate', 'Date'],
     ['number', 'Int', 'obj'],
-    // ['boolean', 'Boolean'],
-    // ['json', 'JSON'],
-    // ['link', 'linktype'],
+    ['boolean', 'Boolean'],
+    ['json', 'JSON', 'obj'],
+    ['link', 'linktype'],
     // not file
     // not group
     // not global field
