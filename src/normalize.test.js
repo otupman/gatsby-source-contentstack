@@ -25,7 +25,10 @@ describe('buildCustomSchema', () => {
     const field = fieldFn(fieldType, opts);
     // A group or global field w/out it's own field will be ignored
     field.schema = [stringField({uid: `${fieldType}_child_schema_field`})]
-    return field;
+    return {
+      ...field,
+      ...opts,  // Override again blergh
+    };
   }
 
   const testCase = (fn, opts, expectedType) => {
@@ -106,6 +109,19 @@ describe('buildCustomSchema', () => {
         expect(builtFileField.parent).toEqual(parent);
         expect(builtFileField.field).toEqual(field);
       });
+
+      describe('Group-like fields', () => {
+        describe('when there are no sub-schema fields', () => {
+          const emptySchemaLikeField = schemaLikeField('global_field', {schema: []})
+          it('does not get added to the field list', () => {
+            expect(Object.keys(build([emptySchemaLikeField]).fields)).not.toContain(emptySchemaLikeField.uid);
+          })
+          it('is not added to the type list', () => {
+            expect(build([emptySchemaLikeField]).types).toEqual([])
+          })
+        })
+
+      })
 
     })
   })
