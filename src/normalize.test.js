@@ -30,7 +30,7 @@ describe('buildCustomSchema', () => {
   };
   const objField = type => ({ type: type });
 
-  const fieldTypes = [
+  const simpleFieldTypes = [
     ['text', 'String', 'resolves'],
     ['isodate', 'Date'],
     ['number', 'Int', 'resolves'],
@@ -44,17 +44,19 @@ describe('buildCustomSchema', () => {
     // not reference
 
   ]
+  const processExpected = (type, returnType) => {
+    return returnType === 'resolves' ? objField(type) : type;
+  }
+  const fieldDefsToMultiples = fieldTypeDefs =>  fieldTypeDefs.map(([type, expectedType, returnType]) => [
+    testCase(type, { mandatory: true, multiple: true }, processExpected(`[${expectedType}]!`, returnType)),
+    testCase(type, { mandatory: true, multiple: false }, processExpected(`${expectedType}!`, returnType)),
+    testCase(type, { mandatory: false, multiple: true }, processExpected(`[${expectedType}]`, returnType)),
+    testCase(type, { mandatory: false, multiple: false }, processExpected(`${expectedType}`, returnType)),
+  ]).reduce((allTests, testsToAdd) => allTests.concat(testsToAdd))
 
   describe('simple fields', () => {
-    const processExpected = (type, returnType) => {
-      return returnType === 'resolves' ? objField(type) : type;
-    }
-    it.each(fieldTypes.map(([type, expectedType, returnType]) => [
-      testCase(type, { mandatory: true, multiple: true }, processExpected(`[${expectedType}]!`, returnType)),
-      testCase(type, { mandatory: true, multiple: false }, processExpected(`${expectedType}!`, returnType)),
-      testCase(type, { mandatory: false, multiple: true }, processExpected(`[${expectedType}]`, returnType)),
-      testCase(type, { mandatory: false, multiple: false }, processExpected(`${expectedType}`, returnType)),
-    ]).reduce((allTests, testsToAdd) => allTests.concat(testsToAdd)))
+
+    it.each(fieldDefsToMultiples(simpleFieldTypes))
     ( 'built $fieldOpts must be type $expectedType', ({ fieldFn, fieldOpts, expectedType }) => {
       const testField = fieldFn(fieldOpts);
       const builtFields = build([testField]);
