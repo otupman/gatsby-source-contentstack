@@ -2,7 +2,7 @@ import { buildCustomSchema } from './normalize';
 
 describe('buildCustomSchema', () => {
   const schema = {} // Schema from CS
-  const parent = null;
+  const parent = 'Parent_value_from_test';
   const prefix = 'prefix';
   const disableMandatoryFields = false;
 
@@ -83,6 +83,21 @@ describe('buildCustomSchema', () => {
       expect(builtField.resolve).not.toBeNull();
       expect(builtField.resolve(sourceWithField)).toEqual('Found');
       expect(builtField.resolve({})).toBeNull();
+    })
+  })
+
+  describe('Complex field types', () => {
+    describe('files', () => {
+      it('adds to the type list', () => {
+        expect(build([fieldFn('file')]).types).toContain(`type ${prefix}_assets implements Node @infer { url: String }`)
+      });
+      it('adds to the file field list', () => {
+        const field = fieldFn('file');
+        const builtFileField = build([field]).fileFields[0];
+        expect(builtFileField.parent).toEqual(parent);
+        expect(builtFileField.field).toEqual(field);
+      });
+
     })
   })
 })
