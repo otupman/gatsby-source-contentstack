@@ -395,7 +395,7 @@ const buildBlockCustomSchema = (
       fileFields,
       newparent,
       prefix,
-      disableMandatoryFields
+      opts
     );
 
     for (const key in fields) {
