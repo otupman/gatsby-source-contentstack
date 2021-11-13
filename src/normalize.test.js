@@ -227,7 +227,7 @@ describe('buildCustomSchema', () => {
 
         describe('the declared sub-type', () => {
           it('is declared', () => {
-            expect(build([schemaLikeField]).types[0]).toContain(`type ${parent}_${defaultUid}`)
+            expect(build([schemaLikeField]).types[0]).toContain(`type ${parent}_${schemaLikeField.uid}`)
           });
           it('infers sub-fields', () => {
             expect(build([schemaLikeField]).types[0]).toContain('subfield_1:[String]!')
