@@ -481,24 +481,40 @@ const buildCustomSchema = (exports.buildCustomSchema = (
   references = references || [];
   fileFields = fileFields || [];
   types = types || [];
+
+  const resolverFn = field => source => source[field.uid] || null;
+
+  const simpleFields = {
+    'text': { type: 'String', needsResolving: true},
+    // 'isodate': { type: 'Date', needsResolving: false},
+    // 'number': { type: 'Int', needsResolving: true},
+    // 'boolean': { type: 'Boolean', needsResolving: false},
+    // 'json': { type: 'JSON', needsResolving: true},
+    // 'link': { type: 'linktype', needsResolving: false},
+  }
+
   schema.forEach(field => {
-    switch (field.data_type) {
-      case 'text':
+    if(simpleFields[field.data_type]) {
+      const conversionInfo = simpleFields[field.data_type];
+      if(conversionInfo.needsResolving) {
         fields[field.uid] = {
           resolve: source => source[field.uid] || null,
         };
-        if (field.mandatory && !disableMandatoryFields) {
-          if (field.multiple) {
-            fields[field.uid].type = '[String]!';
-          } else {
-            fields[field.uid].type = 'String!';
-          }
-        } else if (field.multiple) {
-          fields[field.uid].type = '[String]';
+      }
+
+      if (field.mandatory && !disableMandatoryFields) {
+        if (field.multiple) {
+          fields[field.uid].type = `[${conversionInfo.type}]!`;
         } else {
-          fields[field.uid].type = 'String';
+          fields[field.uid].type = `${conversionInfo.type}!`;
         }
-        break;
+      } else if (field.multiple) {
+        fields[field.uid].type = `[${conversionInfo.type}]`;
+      } else {
+        fields[field.uid].type = `${conversionInfo.type}`;
+      }
+    }
+    switch (field.data_type) {
       case 'isodate':
         if (field.mandatory && !disableMandatoryFields) {
           if (field.multiple) {
