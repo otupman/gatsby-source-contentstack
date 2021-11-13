@@ -526,18 +526,8 @@ const buildCustomSchema = (exports.buildCustomSchema = (
           parent,
           field
         })
-        
-        if (field.mandatory && !disableMandatoryFields) {
-          if (field.multiple) {
-            fields[field.uid] = `[${prefix}_assets]!`;
-          } else {
-            fields[field.uid] = `${prefix}_assets!`;
-          }
-        } else if (field.multiple) {
-          fields[field.uid] = `[${prefix}_assets]`;
-        } else {
-          fields[field.uid] = `${prefix}_assets`;
-        }
+
+        fields[field.uid] = buildTargetType(field, `${prefix}_assets`)
         break;
       case 'group':
       case 'global_field':
