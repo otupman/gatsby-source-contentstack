@@ -546,9 +546,7 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         );
 
         for (const key in result.fields) {
-          if (
-            Object.prototype.hasOwnProperty.call(result.fields[key], 'type')
-          ) {
+          if (!!result.fields[key]['type']) {
             result.fields[key] = result.fields[key].type;
           }
         }
