@@ -32,17 +32,17 @@ describe('buildCustomSchema', () => {
     const objField = type => ({ type: type });
 
     it.each([
-      testCase(stringField, { mandatory: true, multiple: true }, objField('[String]!') ),
-      testCase(stringField, { mandatory: true, multiple: false }, objField('String!') ),
-      testCase(stringField, { mandatory: false, multiple: true }, objField('[String]')),
-      testCase(stringField, { mandatory: false, multiple: false}, objField('String')),
-      testCase(isoDate, { mandatory: true, multiple: true }, '[Date]!' ),
-      testCase(isoDate, { mandatory: true, multiple: false }, 'Date!' ),
-      testCase(isoDate, { mandatory: false, multiple: true }, '[Date]'),
-      testCase(isoDate, { mandatory: false, multiple: false}, 'Date'),
-      testCase(numberField, { mandatory: true, multiple: true }, objField('[Int]!') ),
-      testCase(numberField, { mandatory: true, multiple: false }, objField('Int!') ),
-      testCase(numberField, { mandatory: false, multiple: true }, objField('[Int]')),
+      testCase('text', { mandatory: true, multiple: true }, objField('[String]!') ),
+      testCase('text', { mandatory: true, multiple: false }, objField('String!') ),
+      testCase('text', { mandatory: false, multiple: true }, objField('[String]')),
+      testCase('text', { mandatory: false, multiple: false}, objField('String')),
+      testCase('isodate', { mandatory: true, multiple: true }, '[Date]!' ),
+      testCase('isodate', { mandatory: true, multiple: false }, 'Date!' ),
+      testCase('isodate', { mandatory: false, multiple: true }, '[Date]'),
+      testCase('isodate', { mandatory: false, multiple: false}, 'Date'),
+      testCase('number', { mandatory: true, multiple: true }, objField('[Int]!') ),
+      testCase('number', { mandatory: true, multiple: false }, objField('Int!') ),
+      testCase('number', { mandatory: false, multiple: true }, objField('[Int]')),
       testCase('number', { mandatory: false, multiple: false}, objField('Int')),
     ])
     ( 'built $fieldOpts must be type $expectedType', ({ fieldFn, fieldOpts, expectedType }) => {
