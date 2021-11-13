@@ -498,16 +498,14 @@ const buildCustomSchema = (exports.buildCustomSchema = (
       const conversionInfo = simpleFields[field.data_type];
       let targetType = '';
 
-      if (field.mandatory && !disableMandatoryFields) {
-        if (field.multiple) {
-          targetType = `[${conversionInfo.type}]!`;
-        } else {
-          targetType = `${conversionInfo.type}!`;
-        }
-      } else if (field.multiple) {
+      if (field.multiple) {
         targetType = `[${conversionInfo.type}]`;
       } else {
         targetType = `${conversionInfo.type}`;
+      }
+
+      if(field.mandatory && !disableMandatoryFields) {
+        targetType += '!';
       }
 
       if(conversionInfo.needsResolving) {
