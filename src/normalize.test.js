@@ -155,6 +155,7 @@ describe('buildCustomSchema', () => {
               expect(builtSchema.types[0])
                 .toContain(`type ${prefix}_${typeof referenceTo === 'array' ? referenceTo[0] : referenceTo}`)
             })
+
             it('adds to the list of references', () => {
               expect(builtSchema.references[0]).toMatchObject({
                 parent,
@@ -165,6 +166,36 @@ describe('buildCustomSchema', () => {
         })
 
         describe('with >1 references', () => {
+          const targets = ['target_1', 'target_2'];
+          const builtSchema = build([fieldFn(
+            'reference', { reference_to: targets, }
+          )]);
+
+          describe('the union type', () => {
+            it('declares a union type name using the target names', () => {
+              // Union type is added last
+              expect(builtSchema.types[targets.length])
+                .toContain(`union ${prefix}_target_1prefix_target_2_Union`);
+            })
+
+            it('references all the target types', () => {
+              expect(builtSchema.types[targets.length])
+                .toContain(` = ${prefix}_target_1 | ${prefix}_target_2`)
+            })
+
+            it.each(targets)('declares the target types %s', (targetName) => {
+              // TODO: Fix the assumed ordering of the target types
+              expect(builtSchema.types[targets.indexOf(targetName)])
+                .toEqual(`type ${prefix}_${targetName} implements Node @infer { title: String! }`)
+            })
+          })
+
+          it('adds to the list of references', () => {
+            expect(builtSchema.references[0]).toMatchObject({
+              parent,
+              uid: defaultUid,
+            })
+          })
 
         })
       })
