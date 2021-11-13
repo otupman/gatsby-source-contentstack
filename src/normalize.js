@@ -587,13 +587,13 @@ const buildCustomSchema = (exports.buildCustomSchema = (
 
         break;
       case 'reference':
+        const buildReferenceTypeDeclaration = typeName => `type ${typeName} implements Node @infer { title: String${disableMandatoryFields ? '' : '!'} }`
         let unionType = 'union ';
         let fieldTypeName = null;
         if (typeof field.reference_to === 'string' || field.reference_to.length === 1) {
           field.reference_to = Array.isArray(field.reference_to) ? field.reference_to[0] : field.reference_to;
-          const type = `type ${prefix}_${field.reference_to} implements Node @infer { title: String${disableMandatoryFields ? '' : '!'} }`;
 
-          types.push(type);
+          types.push(buildReferenceTypeDeclaration(`${prefix}_${field.reference_to}`));
 
           fieldTypeName = `${prefix}_${field.reference_to}`;
         } else {
@@ -602,9 +602,9 @@ const buildCustomSchema = (exports.buildCustomSchema = (
             const referenceType = `${prefix}_${reference}`;
             unionType = unionType.concat(referenceType);
             unions.push(referenceType);
-            const type = `type ${referenceType} implements Node @infer { title: String${disableMandatoryFields ? '' : '!'} }`;
-            types.push(type);
           });
+
+          types.push(...unions.map(buildReferenceTypeDeclaration))
 
           unionType = unionType.concat('_Union = ', unions.join(' | '));
 
