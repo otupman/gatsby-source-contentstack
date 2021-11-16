@@ -52,7 +52,16 @@ exports.createSchemaCustomization = async ({ cache, actions, schema }, configOpt
     const contentTypeUid = contentType.uid.replace(/-/g, '_');
     const name = `${typePrefix}_${contentTypeUid}`;
     const extendedSchema = extendSchemaWithDefaultEntryFields(contentType.schema);
-    let result = buildCustomSchema(extendedSchema, [], [], [], [], name, typePrefix, disableMandatoryFields);
+    let result = buildCustomSchema(
+      extendedSchema,
+      [], [], [], [],
+      name,
+      typePrefix,
+      {
+        disableMandatoryFields,
+        createSeparateGlobalFieldTypes: configOptions?.schemaConfig?.createSeparateGlobalFieldTypes
+      },
+    );
     references = references.concat(result.references);
     groups = groups.concat(result.groups);
     fileFields = fileFields.concat(result.fileFields);
@@ -362,6 +371,9 @@ exports.pluginOptionsSchema = ({ Joi }) => {
     expediteBuild: Joi.boolean().default(false).description(`expediteBuild set this to either true or false.`),
     enableSchemaGeneration: Joi.boolean().default(false).description(`Specify true if you want to generate custom schema.`),
     disableMandatoryFields: Joi.boolean().default(false).description(`Specify true if you want to generate optional graphql fields for mandatory Contentstack fields`),
+    schemaConfig: Joi.object({
+      createSeparateGlobalFieldTypes: Joi.boolean().default(false).description('Specify true if you wish Global Fields to have a single GraphQL type across all Content Types'),
+    }),
     downloadImages: Joi.boolean().default(false).description(`Specify true if you want to download all your contentstack images locally`),
     contentTypes: Joi.array().items(Joi.string().required()).description(`Specify list of content-types to be fetched from contentstack`),
     excludeContentTypes: Joi.array().items(Joi.string().required()).description(`Specify list of content-types to be excluded while fetching data from contentstack`),
