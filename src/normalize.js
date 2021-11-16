@@ -467,9 +467,7 @@ exports.extendSchemaWithDefaultEntryFields = schema => {
   return schema;
 };
 
-function buildGroupType(parent, field, types, references, groups, fileFields, prefix, opts) {
-  let groupParent = parent.concat('_', field.uid);
-
+function buildGroupType(groupParent, field, types, references, groups, fileFields, prefix, opts) {
   const groupResult = buildCustomSchema(
     field.schema,
     types,
@@ -565,11 +563,14 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         fields[field.uid] = buildTargetType(field, `${prefix}_assets`)
         break;
       case 'group':
-        const builtType = buildGroupType(parent, field, types, references, groups, fileFields, prefix, opts);
+        const groupParent = parent.concat('_', field.uid)
+        const builtType = buildGroupType(groupParent, field, types, references, groups, fileFields, prefix, opts);
+
         if(!builtType) {
           return;
         }
-        let { groupParent, groupResult, groupFieldType, } = builtType;
+
+        let { groupResult, groupFieldType, } = builtType;
 
         types.push(groupFieldType);
 
