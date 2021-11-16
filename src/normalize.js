@@ -481,7 +481,7 @@ function buildGroupType(groupParent, field, types, references, groups, fileField
 
   if( Object.keys(groupResult.fields).length === 0 ) {
     // Early exit if the field actually has no sub fields
-    return;
+    return null;
   }
 
   for (const key in groupResult.fields) {
@@ -490,9 +490,7 @@ function buildGroupType(groupParent, field, types, references, groups, fileField
     }
   }
 
-  let groupFieldType = `type ${groupParent} @infer ${JSON.stringify(groupResult.fields).replace(/"/g, '')}`;
-
-  return { groupParent, groupResult, groupFieldType };
+  return `type ${groupParent} @infer ${JSON.stringify(groupResult.fields).replace(/"/g, '')}`;
 }
 
 const buildCustomSchema = (exports.buildCustomSchema = (
@@ -564,15 +562,13 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         break;
       case 'group':
         const groupParent = parent.concat('_', field.uid)
-        const builtType = buildGroupType(groupParent, field, types, references, groups, fileFields, prefix, opts);
+        const groupType = buildGroupType(groupParent, field, types, references, groups, fileFields, prefix, opts);
 
-        if(!builtType) {
+        if(!groupType) {
           return;
         }
 
-        let { groupResult, groupFieldType, } = builtType;
-
-        types.push(groupFieldType);
+        types.push(groupType);
 
         groups.push({
           parent,
@@ -585,32 +581,13 @@ const buildCustomSchema = (exports.buildCustomSchema = (
 
       case 'global_field':
         let globalFieldParent = parent.concat('_', field.uid);
+        const globalType = buildGroupType(globalFieldParent, field, types, references, groups, fileFields, prefix, opts);
 
-        const globalFieldResult = buildCustomSchema(
-          field.schema,
-          types,
-          references,
-          groups,
-          fileFields,
-          globalFieldParent,
-          prefix,
-          opts
-        );
-
-        for (const key in globalFieldResult.fields) {
-          if (!!globalFieldResult.fields[key]['type']) {
-            globalFieldResult.fields[key] = globalFieldResult.fields[key].type;
-          }
-        }
-
-        let globalFieldType = `type ${globalFieldParent} @infer ${JSON.stringify(globalFieldResult.fields).replace(/"/g, '')}`;
-
-        if( Object.keys(globalFieldResult.fields).length === 0 ) {
-          // Early exit if the field actually has no sub fields
+        if(!globalType) {
           return;
         }
 
-        types.push(globalFieldType);
+        types.push(globalType);
 
         groups.push({
           parent,
