@@ -241,7 +241,7 @@ describe('buildCustomSchema', () => {
         })
       })
 
-      fdescribe('Global fields', () => {
+      describe('Global fields', () => {
         describe('when a global field has already been defined', () => {
           it('does not create a new one', () => {});
           it('updates the groups', () => {});
