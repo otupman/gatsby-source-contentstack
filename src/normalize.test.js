@@ -1,4 +1,4 @@
-import { buildCustomSchema } from './normalize';
+const { buildCustomSchema } = require('./normalize')
 
 describe('buildCustomSchema', () => {
   const schema = {} // Schema from CS
