@@ -249,7 +249,7 @@ describe('buildCustomSchema', () => {
         })
 
         describe.each([
-          [{ createSeparateGlobalFieldTypes: true}, 'my_global_field_type_name'],
+          [{ createSeparateGlobalFieldTypes: true}, 'Parent_value_from_test_jest_root_type'],
           [{ createSeparateGlobalFieldTypes: false}, 'Parent_value_from_test_jest_root_type'],
         ])
         (`when %p created type name is %s`, (schemaConfig, expectedTypeName) => {

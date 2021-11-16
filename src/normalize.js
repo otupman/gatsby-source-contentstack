@@ -548,11 +548,6 @@ const buildCustomSchema = (exports.buildCustomSchema = (
           opts
         );
 
-        if( Object.keys(groupResult.fields).length === 0 ) {
-          // Early exit if the field actually has no sub fields
-          return;
-        }
-
         for (const key in groupResult.fields) {
           if (!!groupResult.fields[key]['type']) {
             groupResult.fields[key] = groupResult.fields[key].type;
@@ -560,6 +555,11 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         }
 
         let groupFieldType = `type ${groupParent} @infer ${JSON.stringify(groupResult.fields).replace(/"/g, '')}`;
+
+        if( Object.keys(groupResult.fields).length === 0 ) {
+          // Early exit if the field actually has no sub fields
+          return;
+        }
 
         types.push(groupFieldType);
 
@@ -573,9 +573,7 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         break;
 
       case 'global_field':
-        let globalFieldParent = createSeparateGlobalFieldTypes
-          ? field.reference_to
-          : parent.concat('_', field.uid);
+        let globalFieldParent = parent.concat('_', field.uid);
 
         const globalFieldResult = buildCustomSchema(
           field.schema,
@@ -588,11 +586,6 @@ const buildCustomSchema = (exports.buildCustomSchema = (
           opts
         );
 
-        if( Object.keys(globalFieldResult.fields).length === 0 ) {
-          // Early exit if the field actually has no sub fields
-          return;
-        }
-
         for (const key in globalFieldResult.fields) {
           if (!!globalFieldResult.fields[key]['type']) {
             globalFieldResult.fields[key] = globalFieldResult.fields[key].type;
@@ -600,6 +593,11 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         }
 
         let globalFieldType = `type ${globalFieldParent} @infer ${JSON.stringify(globalFieldResult.fields).replace(/"/g, '')}`;
+
+        if( Object.keys(globalFieldResult.fields).length === 0 ) {
+          // Early exit if the field actually has no sub fields
+          return;
+        }
 
         types.push(globalFieldType);
 
