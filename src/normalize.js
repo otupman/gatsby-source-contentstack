@@ -467,6 +467,36 @@ exports.extendSchemaWithDefaultEntryFields = schema => {
   return schema;
 };
 
+function buildGroupType(parent, field, types, references, groups, fileFields, prefix, opts) {
+  let groupParent = parent.concat('_', field.uid);
+
+  const groupResult = buildCustomSchema(
+    field.schema,
+    types,
+    references,
+    groups,
+    fileFields,
+    groupParent,
+    prefix,
+    opts,
+  );
+
+  if( Object.keys(groupResult.fields).length === 0 ) {
+    // Early exit if the field actually has no sub fields
+    return;
+  }
+
+  for (const key in groupResult.fields) {
+    if (!!groupResult.fields[key]['type']) {
+      groupResult.fields[key] = groupResult.fields[key].type;
+    }
+  }
+
+  let groupFieldType = `type ${groupParent} @infer ${JSON.stringify(groupResult.fields).replace(/"/g, '')}`;
+
+  return { groupParent, groupResult, groupFieldType };
+}
+
 const buildCustomSchema = (exports.buildCustomSchema = (
   schema,
   types,
@@ -535,31 +565,11 @@ const buildCustomSchema = (exports.buildCustomSchema = (
         fields[field.uid] = buildTargetType(field, `${prefix}_assets`)
         break;
       case 'group':
-        let groupParent = parent.concat('_', field.uid);
-
-        const groupResult = buildCustomSchema(
-          field.schema,
-          types,
-          references,
-          groups,
-          fileFields,
-          groupParent,
-          prefix,
-          opts
-        );
-
-        for (const key in groupResult.fields) {
-          if (!!groupResult.fields[key]['type']) {
-            groupResult.fields[key] = groupResult.fields[key].type;
-          }
-        }
-
-        let groupFieldType = `type ${groupParent} @infer ${JSON.stringify(groupResult.fields).replace(/"/g, '')}`;
-
-        if( Object.keys(groupResult.fields).length === 0 ) {
-          // Early exit if the field actually has no sub fields
+        const builtType = buildGroupType(parent, field, types, references, groups, fileFields, prefix, opts);
+        if(!builtType) {
           return;
         }
+        let { groupParent, groupResult, groupFieldType, } = builtType;
 
         types.push(groupFieldType);
 
